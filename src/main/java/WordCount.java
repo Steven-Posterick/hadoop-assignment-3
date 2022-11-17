@@ -17,15 +17,25 @@ public class WordCount {
     private final Text keyText = new Text();
 
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
-      StringTokenizer itr = new StringTokenizer(value.toString());
+      StringTokenizer outerIterator = new StringTokenizer(value.toString());
 
-      if (!itr.hasMoreTokens()) return;
+      if (outerIterator.hasMoreTokens())
+        valueText.set(outerIterator.nextToken());
 
-      valueText.set(itr.nextToken());
+      for (int i = 1; outerIterator.hasMoreTokens(); i++) {
+        String outerToken = outerIterator.nextToken();
+        StringTokenizer innerIterator = new StringTokenizer(value.toString());
 
-      while (itr.hasMoreTokens()) {
-        keyText.set(itr.nextToken());
-        context.write(keyText, valueText);
+        innerIterator.nextToken();
+        for (int j = 1; innerIterator.hasMoreTokens(); j++) {
+          if (i == j) continue;
+          StringBuilder sb = new StringBuilder();
+          String innerToken = innerIterator.nextToken();
+          sb.append(outerToken).append(",").append(innerToken);
+
+          keyText.set(sb.toString());
+          context.write(keyText, valueText);
+        }
       }
     }
   }
