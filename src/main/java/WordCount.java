@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.StringTokenizer;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -28,17 +29,26 @@ public class WordCount {
       }
     }
   }
-  public static class IntSumReducer
-    extends Reducer<Text,Text,Text,Text> {
-    private Text result = new Text();
+  public static class TextReducer extends Reducer<Text,Text,Text,Text> {
+    private final Text result = new Text();
     public void reduce(Text key, Iterable<Text> values,
                        Context context
     ) throws IOException, InterruptedException {
 
-      for (Text val : values) {
-        sum += val.get();
+      Iterator<Text> iterator = values.iterator();
+      if (!iterator.hasNext()) return;
+
+      StringBuilder sb = new StringBuilder();
+      sb.append(iterator.next());
+      sb.append(" -> ");
+
+      while (iterator.hasNext()){
+        sb.append(iterator.next());
+        if (iterator.hasNext())
+          sb.append(",");
       }
-      result.set("");
+
+      result.set(sb.toString());
       context.write(key, result);
     }
   }
@@ -48,7 +58,7 @@ public class WordCount {
     job.setJarByClass(WordCount.class);
     job.setMapperClass(TokenizerMapper.class);
     //job.setCombinerClass(IntSumReducer.class);
-    job.setReducerClass(IntSumReducer.class);
+    job.setReducerClass(TextReducer.class);
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(IntWritable.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
