@@ -28,7 +28,7 @@ public class WordCount {
 
         innerIterator.nextToken();
         for (int j = 1; innerIterator.hasMoreTokens(); j++) {
-          if (i == j) continue;
+          if (i == j || i > j) continue;
           StringBuilder sb = new StringBuilder();
           String innerToken = innerIterator.nextToken();
           sb.append(outerToken).append(",").append(innerToken);
@@ -49,8 +49,6 @@ public class WordCount {
       if (!iterator.hasNext()) return;
 
       StringBuilder sb = new StringBuilder();
-      sb.append(iterator.next());
-      sb.append(" -> ");
 
       while (iterator.hasNext()){
         sb.append(iterator.next());
@@ -70,7 +68,7 @@ public class WordCount {
     //job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(TextReducer.class);
     job.setOutputKeyClass(Text.class);
-    job.setOutputValueClass(IntWritable.class);
+    job.setOutputValueClass(Text.class);
     FileInputFormat.addInputPath(job, new Path(args[0]));
     FileOutputFormat.setOutputPath(job, new Path(args[1]));
     System.exit(job.waitForCompletion(true) ? 0 : 1);
